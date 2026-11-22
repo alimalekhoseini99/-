@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داربست | سامانه محاسبات مهندسی داربست پایپینگ و لوپ‌ها</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vazirmatn Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #0b1120;
+            color: #e2e8f0;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+        }
+        .input-field {
+            background-color: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: #f8fafc !important;
+            transition: all 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #f97316 !important;
+            box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important;
+            outline: none;
+        }
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 999px;
+        }
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .glass-panel {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                color: #0f172a !important;
+            }
+            .text-slate-100, .text-slate-200, .text-slate-300 {
+                color: #0f172a !important;
+            }
+            .text-slate-400 {
+                color: #475569 !important;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            th, td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 8px !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-14 selection:bg-orange-500 selection:text-white">
+
+    <!-- Top Navigation / Branding Header -->
+    <header class="bg-slate-950/90 border-b border-slate-800 sticky top-0 z-50 no-print backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-slate-950 text-2xl font-black shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-black tracking-tight text-white">داربست</h1>
+                        <span class="text-[11px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded-md">نسخه مهندسی پایپینگ و راه‌پله</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-0.5">سامانه تخصصی محاسبه متعلقات داربست لوپ‌های پایپینگ و برج راه‌پله دسترسی از تراز صفر</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button onclick="exportToCSV()" class="px-3.5 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-sm"></i> خروجی اکسل (CSV)
+                </button>
+                <button onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-print text-sm"></i> چاپ گزارش / PDF
+                </button>
+                <button onclick="resetForm()" class="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold rounded-xl border border-rose-500/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right text-sm"></i> بازنشانی
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 mt-7 grid grid-cols-1 lg:grid-cols-12 gap-7">
+        
+        <!-- Left Column: Engineering Inputs -->
+        <div class="lg:col-span-5 space-y-5 no-print">
+            <div class="glass-panel rounded-2xl p-6 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3.5 mb-5">
+                    <h2 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-orange-500"></i> پارامترهای طراحی و هندسه لوپ‌ها
+                    </h2>
+                    <span class="text-[11px] text-slate-400 font-mono">EN 12811 / BS 5973</span>
+                </div>
+
+                <form id="scaffoldForm" onsubmit="event.preventDefault(); calculateScaffolding();" class="space-y-5">
+                    
+                    <!-- Primary Loop Parameters (Highlighted) -->
+                    <div class="bg-slate-900/90 border border-orange-500/30 rounded-xl p-4 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-orange-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-nodes"></i> مشخصات اصلی لوپ‌های پایپینگ (Expansion Loops)
+                            </span>
+                            <span class="text-[10px] bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded">اجرا از کف زمین</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">تعداد لوپ‌های خط (عدد)</label>
+                                <input type="number" id="loopCount" value="4" min="1" max="50" step="1" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm font-bold text-orange-400" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">ارتفاع لوله از کف زمین (متر)</label>
+                                <input type="number" id="pipeElevation" value="6.0" min="1" max="60" step="0.5" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm font-bold" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">عرض دهانه هر لوپ (L - متر)</label>
+                                <input type="number" id="loopLength" value="3.0" min="1" max="30" step="0.5" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">عمق / بیرون‌زدگی لوپ (W - متر)</label>
+                                <input type="number" id="loopWidth" value="2.5" min="1" max="20" step="0.5" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Staircase Tower Settings (New Highlighted Section) -->
+                    <div class="bg-slate-900/90 border border-sky-500/35 rounded-xl p-4 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-sky-400">
+                                <input type="checkbox" id="includeStaircase" checked onchange="toggleStaircase(); calculateScaffolding();" class="w-4 h-4 rounded accent-sky-500">
+                                <i class="fa-solid fa-stairs"></i>
+                                <span>محاسبه برج راه‌پله دسترسی (Staircase Tower)</span>
+                            </label>
+                            <span class="text-[10px] bg-sky-500/15 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded">باکس ۲.۵ × ۱.۵ متر</span>
+                        </div>
+
+                        <div id="staircaseContainer" class="space-y-3 pt-1">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-slate-300 mb-1">تعداد برج‌های راه‌پله</label>
+                                    <input type="number" id="staircaseCount" value="1" min="1" max="20" step="1" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm font-bold text-sky-400">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-300 mb-1">نوع اجرای پله‌ها</label>
+                                    <select id="stairType" onchange="calculateScaffolding()" class="input-field w-full rounded-lg px-2.5 py-2 text-xs">
+                                        <option value="prefab" selected>پله پیش‌ساخته آلومینیومی/گالوانیزه</option>
+                                        <option value="tube_board">پله ساخته‌شده با لوله و تخته</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-400 leading-relaxed bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+                                <i class="fa-solid fa-circle-info text-sky-400 ml-1"></i>
+                                برج راه‌پله شامل ۶ پایه عمودی، پاگردهای میانی، شاسی شیب‌دار، هندریل ایمنی طرفین و پله‌ها از تراز ۰.۰۰ تا تراز پایپینگ محاسبه می‌شود.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Optional Straight Run Between Loops -->
+                    <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-3.5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-300">
+                                <input type="checkbox" id="includeStraightRun" onchange="toggleStraightRun(); calculateScaffolding();" class="w-4 h-4 rounded accent-orange-500">
+                                <span>محاسبه داربست مسیر مستقیم بین لوپ‌ها (اختیاری)</span>
+                            </label>
+                        </div>
+                        <div id="straightRunContainer" class="hidden grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">مجموع طول مسیر مستقیم (متر)</label>
+                                <input type="number" id="straightRunLength" value="12" min="0" step="1" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-1.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">عرض داربست مسیر مستقیم (متر)</label>
+                                <input type="number" id="straightRunWidth" value="1.5" min="0.8" step="0.1" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-1.5 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grid & Working Platforms -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-400 block border-b border-slate-800/80 pb-1">شبکه‌بندی داربست و سکوهای کاری</label>
+                        <div class="grid grid-cols-3 gap-2.5">
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">دهانه طولی (Bay L)</label>
+                                <select id="bayLength" onchange="calculateScaffolding()" class="input-field w-full rounded-lg px-2.5 py-2 text-xs">
+                                    <option value="1.5" selected>1.5 متر (استاندارد)</option>
+                                    <option value="1.8">1.8 متر</option>
+                                    <option value="2.0">2.0 متر</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">دهانه عرضی (Bay W)</label>
+                                <select id="bayWidth" onchange="calculateScaffolding()" class="input-field w-full rounded-lg px-2.5 py-2 text-xs">
+                                    <option value="1.2">1.2 متر</option>
+                                    <option value="1.5" selected>1.5 متر (استاندارد)</option>
+                                    <option value="1.8">1.8 متر</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">ارتفاع طبقه (Lift H)</label>
+                                <select id="liftHeight" onchange="calculateScaffolding()" class="input-field w-full rounded-lg px-2.5 py-2 text-xs">
+                                    <option value="1.8">1.8 متر</option>
+                                    <option value="2.0" selected>2.0 متر (استاندارد)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">تعداد سکوهای تخته کارگاهی در هر برج</label>
+                                <input type="number" id="workingPlatforms" value="1" min="1" max="10" step="1" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm" title="مثلاً 1 سکو در تراز نهایی پایپینگ، یا بیشتر در صورت نیاز به طبقات میانی">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">طول تخته داربست استاندارد</label>
+                                <select id="boardLength" onchange="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-xs">
+                                    <option value="4" selected>4.0 متری (عرض 22.5cm)</option>
+                                    <option value="3">3.0 متری (عرض 22.5cm)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Piping Load & Congestion -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-400 block border-b border-slate-800/80 pb-1">تراکم خطوط لوله و اتصالات به استراکچر</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">تعداد خطوط لوله در هر لوپ</label>
+                                <input type="number" id="pipesPerLoop" value="4" min="1" max="30" step="1" oninput="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">میانگین سایز لوله‌ها (اینچ)</label>
+                                <select id="avgPipeSize" onchange="calculateScaffolding()" class="input-field w-full rounded-lg px-3 py-2 text-xs">
+                                    <option value="4">تا 4 اینچ (سبک)</option>
+                                    <option value="10" selected>6 تا 12 اینچ (متوسط)</option>
+                                    <option value="18">بالای 12 اینچ (سنگین / مهار ویژه)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Waste & Contingency Slider -->
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-percent text-orange-400"></i> ضریب پرتی و اطمینان (Waste & Contingency)
+                            </label>
+                            <span id="wasteValueBadge" class="text-sm font-black text-orange-400 bg-orange-500/15 px-2.5 py-0.5 rounded-lg border border-orange-500/30">10%</span>
+                        </div>
+                        <input type="range" id="wasteFactor" min="0" max="30" value="10" step="1" oninput="updateWasteLabel(); calculateScaffolding();" class="w-full">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>0% (بدون پرتی)</span>
+                            <span>10% (استاندارد صنعتی)</span>
+                            <span>20% (پیچیده)</span>
+                            <span>30% (حداکثر)</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> به‌روزرسانی محاسبات مهندسی
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Interactive Diagram, KPIs & Full BOM Table -->
+        <div class="lg:col-span-7 space-y-6">
+
+            <!-- Interactive SVG Schematic Visualizer -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-drafting-compass text-orange-400"></i> شماتیک مهندسی اجرای داربست لوپ‌ها و برج راه‌پله از تراز صفر
+                        </h3>
+                        <p class="text-[11px] text-slate-400">نمایش زنده برج‌های داربست لوپ‌ها و راه‌پله دسترسی زیگزاگی از کف زمین تا تراز پایپینگ</p>
+                    </div>
+                    <span id="diagramSummaryBadge" class="text-[11px] font-semibold bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
+                        4 لوپ + 1 برج راه‌پله | ارتفاع 6.0 متر
+                    </span>
+                </div>
+
+                <!-- SVG Canvas Container -->
+                <div class="w-full bg-slate-950/90 border border-slate-800/90 rounded-xl p-2 overflow-hidden">
+                    <svg id="scaffoldSchematic" viewBox="0 0 760 240" class="w-full h-auto max-h-60 select-none">
+                        <!-- Dynamically rendered via JS -->
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 4 Main KPI Summary Cards (Net vs Waste vs Total) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
+                <!-- Card 1: Pipes -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-orange-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold text-slate-400">کل لوله مصرفی</span>
+                        <i class="fa-solid fa-grip-lines-vertical text-orange-500/70"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-black text-white"><span id="kpiPipeTotal">0</span> <span class="text-xs font-normal text-slate-400">متر</span></div>
+                        <div class="text-xs font-bold text-orange-400 mt-0.5"><span id="kpiPipeBranches">0</span> شاخه 6 متری</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 flex justify-between text-[10px] text-slate-400">
+                        <span>خالص: <strong id="kpiPipeNet" class="text-slate-200">0</strong>m</span>
+                        <span>پرتی: <strong id="kpiPipeWaste" class="text-amber-400">0</strong>m</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Boards & Stair Flights -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-sky-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold text-slate-400">تخته و واحدهای پله</span>
+                        <i class="fa-solid fa-stairs text-sky-500/70"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-black text-white"><span id="kpiBoardTotal">0</span> <span class="text-xs font-normal text-slate-400">تخته</span></div>
+                        <div class="text-xs font-bold text-sky-400 mt-0.5"><span id="kpiStairUnits">0</span> باکس/پله راه‌پله</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 flex justify-between text-[10px] text-slate-400">
+                        <span>خالص: <strong id="kpiBoardNet" class="text-slate-200">0</strong></span>
+                        <span>پرتی: <strong id="kpiBoardWaste" class="text-sky-400">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Card 3: All Couplers -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-emerald-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold text-slate-400">مجموع انواع بست</span>
+                        <i class="fa-solid fa-link text-emerald-500/70"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-black text-white"><span id="kpiCouplerTotal">0</span> <span class="text-xs font-normal text-slate-400">عدد</span></div>
+                        <div class="text-xs font-bold text-emerald-400 mt-0.5">راست‌گرد، چرخان، رابط، تخته</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 flex justify-between text-[10px] text-slate-400">
+                        <span>خالص: <strong id="kpiCouplerNet" class="text-slate-200">0</strong></span>
+                        <span>پرتی: <strong id="kpiCouplerWaste" class="text-emerald-400">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Total Weight -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-purple-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold text-slate-400">وزن کل متریال</span>
+                        <i class="fa-solid fa-weight-hanging text-purple-500/70"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-black text-white"><span id="kpiWeightTon">0</span> <span class="text-xs font-normal text-slate-400">تن</span></div>
+                        <div class="text-xs font-bold text-purple-400 mt-0.5"><span id="kpiWeightKg">0</span> کیلوگرم</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 flex justify-between text-[10px] text-slate-400">
+                        <span>جهت بارگذاری و حمل</span>
+                        <span class="text-purple-300">با احتساب پرتی</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed BOM Table -->
+            <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table-list text-orange-400"></i> جدول جامع متره و برآورد متریال داربست (MTO)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">تفکیک سهم <strong id="bomLoopSummary" class="text-slate-200">4 لوپ</strong> و <strong id="bomStairSummary" class="text-sky-400">1 برج راه‌پله</strong> از تراز صفر تا ارتفاع <strong id="bomElevSummary" class="text-slate-200">6 متر</strong></p>
+                    </div>
+                    <div class="text-xs bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-300">
+                        ضریب پرتی اعمال شده: <strong id="bomWasteSummary" class="text-orange-400">10%</strong>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs sm:text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 text-[11px] sm:text-xs bg-slate-900/50">
+                                <th class="py-3 px-2 font-semibold">#</th>
+                                <th class="py-3 px-2.5 font-semibold">شرح تجهیز / متریال</th>
+                                <th class="py-3 px-2 font-semibold">واحد</th>
+                                <th class="py-3 px-2 font-semibold text-orange-300">سهم لوپ‌ها</th>
+                                <th class="py-3 px-2 font-semibold text-sky-300">سهم راه‌پله</th>
+                                <th class="py-3 px-2 font-semibold">جمع خالص</th>
+                                <th class="py-3 px-2 font-semibold">پرتی</th>
+                                <th class="py-3 px-2.5 font-semibold text-orange-400">جمع کل نهایی</th>
+                                <th class="py-3 px-2 font-semibold text-left">وزن (kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bomTableBody" class="divide-y divide-slate-800/70 text-slate-200">
+                            <!-- Populated by JS -->
+                        </tbody>
+                        <tfoot id="bomTableFoot" class="border-t-2 border-slate-700 bg-slate-900/60 font-bold text-slate-100">
+                            <!-- Total Row Populated by JS -->
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Technical Engineering Breakdown Box -->
+                <div class="mt-6 bg-slate-900/70 border border-slate-800 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block">پایه‌های عمودی (Standards):</span>
+                        <span id="techStandardsInfo" class="font-bold text-slate-200">-</span>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block">طبقات افقی (Lifts):</span>
+                        <span id="techLiftsInfo" class="font-bold text-slate-200">-</span>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block">برج راه‌پله دسترسی:</span>
+                        <span id="techStairInfo" class="font-bold text-sky-400">-</span>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block">مساحت سکوها و پاگردها:</span>
+                        <span id="techAreaInfo" class="font-bold text-slate-200">-</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let currentBOMData = [];
+
+        function updateWasteLabel() {
+            const val = document.getElementById('wasteFactor').value;
+            document.getElementById('wasteValueBadge').innerText = val + '%';
+        }
+
+        function toggleStaircase() {
+            const isChecked = document.getElementById('includeStaircase').checked;
+            const container = document.getElementById('staircaseContainer');
+            if (isChecked) {
+                container.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                container.classList.add('opacity-40', 'pointer-events-none');
+            }
+        }
+
+        function toggleStraightRun() {
+            const isChecked = document.getElementById('includeStraightRun').checked;
+            const container = document.getElementById('straightRunContainer');
+            if (isChecked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function calculateScaffolding() {
+            // 1. Read Loop & General Inputs
+            const loopCount = Math.max(1, parseInt(document.getElementById('loopCount').value) || 1);
+            const H = Math.max(1, parseFloat(document.getElementById('pipeElevation').value) || 6);
+            const loopL = Math.max(1, parseFloat(document.getElementById('loopLength').value) || 3.0);
+            const loopW = Math.max(1, parseFloat(document.getElementById('loopWidth').value) || 2.5);
+
+            // Staircase Inputs
+            const includeStaircase = document.getElementById('includeStaircase').checked;
+            const staircaseCount = includeStaircase ? Math.max(1, parseInt(document.getElementById('staircaseCount').value) || 1) : 0;
+            const stairType = document.getElementById('stairType').value; // 'prefab' or 'tube_board'
+
+            // Optional Straight Run
+            const includeStraight = document.getElementById('includeStraightRun').checked;
+            const straightL = includeStraight ? (parseFloat(document.getElementById('straightRunLength').value) || 0) : 0;
+            const straightW = includeStraight ? (parseFloat(document.getElementById('straightRunWidth').value) || 1.5) : 0;
+
+            // Grid & Platforms
+            const bayL = parseFloat(document.getElementById('bayLength').value) || 1.5;
+            const bayW = parseFloat(document.getElementById('bayWidth').value) || 1.5;
+            const liftH = parseFloat(document.getElementById('liftHeight').value) || 2.0;
+
+            const workingPlatforms = Math.max(1, parseInt(document.getElementById('workingPlatforms').value) || 1);
+            const boardLen = parseFloat(document.getElementById('boardLength').value) || 4.0;
+
+            const pipesPerLoop = Math.max(1, parseInt(document.getElementById('pipesPerLoop').value) || 4);
+            const avgPipeSize = parseFloat(document.getElementById('avgPipeSize').value) || 10;
+
+            const wastePercent = parseFloat(document.getElementById('wasteFactor').value) || 0;
+            const wasteRatio = wastePercent / 100.0;
+
+            // 2. LOOP SCAFFOLD CALCULATIONS (from El 0.00 to H + 1.1m guardrail)
+            const baysX_loop = Math.ceil(loopL / bayL);
+            const baysY_loop = Math.ceil(loopW / bayW);
+            const standardsPerLoop = (baysX_loop + 1) * (baysY_loop + 1);
+            const numLifts = Math.ceil(H / liftH);
+            const singleStandardHeight = H + 1.1;
+
+            let loopStandardsCount = standardsPerLoop * loopCount;
+            let loopStandardsPipe = loopStandardsCount * singleStandardHeight;
+
+            const ledgersLenPerLift_loop = baysX_loop * bayL * (baysY_loop + 1);
+            const transomsLenPerLift_loop = baysY_loop * bayW * (baysX_loop + 1);
+            let loopHorizontalPipe = (ledgersLenPerLift_loop + transomsLenPerLift_loop) * numLifts * loopCount;
+
+            const loopPerimeter = 2 * (loopL + loopW);
+            let loopGuardrailPipe = loopPerimeter * 2 * workingPlatforms * loopCount;
+
+            const diagLen = Math.sqrt(Math.pow(bayL, 2) + Math.pow(liftH, 2));
+            const perimeterBays = Math.ceil(loopPerimeter / bayL);
+            const bracingTubesPerLoop = (perimeterBays * numLifts * 0.75) + (numLifts * 2);
+            const tieInFactor = avgPipeSize > 12 ? 1.35 : (avgPipeSize > 6 ? 1.15 : 1.0);
+            const pipeCongestionExtra = pipesPerLoop * 1.5 * loopCount;
+            let loopBracingPipe = ((bracingTubesPerLoop * diagLen * loopCount) + pipeCongestionExtra) * tieInFactor;
+
+            // Optional Straight Run added to Loop Group
+            let straightStandardsCount = 0;
+            let straightPlatformArea = 0;
+            let straightPerimeter = 0;
+            if (includeStraight && straightL > 0) {
+                const baysX_str = Math.ceil(straightL / bayL);
+                const baysY_str = Math.ceil(straightW / bayW);
+                straightStandardsCount = (baysX_str + 1) * (baysY_str + 1);
+                loopStandardsCount += straightStandardsCount;
+
+                loopStandardsPipe += straightStandardsCount * singleStandardHeight;
+                const strHorizontalPerLift = (baysX_str * bayL * (baysY_str + 1)) + (baysY_str * bayW * (baysX_str + 1));
+                loopHorizontalPipe += strHorizontalPerLift * numLifts;
+
+                straightPerimeter = 2 * (straightL + straightW);
+                loopGuardrailPipe += straightPerimeter * 2 * workingPlatforms;
+                loopBracingPipe += Math.ceil(straightL / bayL) * numLifts * diagLen * 0.6;
+                straightPlatformArea = straightL * straightW * workingPlatforms;
+            }
+
+            const loopTotalPipeNet = loopStandardsPipe + loopHorizontalPipe + loopGuardrailPipe + loopBracingPipe;
+
+            // 3. STAIRCASE TOWER CALCULATIONS (Standard 2.5m x 1.5m Bay from El 0.00 to H + 1.1m)
+            // A standard independent staircase tower has 2 bays along length (flight + landing = 6 standards)
+            let stairStandardsCount = 0;
+            let stairTotalPipeNet = 0;
+            let stairLandingArea = 0;
+            let stairBoardsNet = 0;
+            let stairToeBoardsNet = 0;
+            let stairRightAngleNet = 0;
+            let stairSwivelNet = 0;
+            let stairSleeveNet = 0;
+            let stairBRCNet = 0;
+            let stairBasePlatesNet = 0;
+            let prefabStairFlightsNet = 0;
+            let stairHandrailSetsNet = 0;
+
+            if (includeStaircase && staircaseCount > 0) {
+                const stairBayL = 2.5; // 1.7m flight + 0.8m landing
+                const stairBayW = 1.5; // double width for up/down flights
+                const standardsPerStairTower = 6; // 2 rows of 3 standards
+                stairStandardsCount = standardsPerStairTower * staircaseCount;
+
+                // Vertical standards from 0.00 to H + 1.1m
+                const stairStandardsPipe = stairStandardsCount * singleStandardHeight;
+
+                // Horizontal ledgers (2 x 2.5m) & transoms (3 x 1.5m) per lift
+                const stairHorizPerLift = (2 * stairBayL) + (3 * stairBayW);
+                const stairHorizontalPipe = stairHorizPerLift * numLifts * staircaseCount;
+
+                // Facade & Plan Bracing on staircase tower
+                const stairDiagLen = Math.sqrt(Math.pow(stairBayL, 2) + Math.pow(liftH, 2));
+                const stairBracingPipe = (numLifts * 4 * stairDiagLen) * staircaseCount;
+
+                // Sloping Stringers & Double Side Handrails per flight
+                const flightSlopeLen = Math.sqrt(Math.pow(1.7, 2) + Math.pow(liftH, 2));
+                // 2 handrails (top + mid) on both sides of flight = 4 sloping tubes per lift
+                const stairHandrailPipe = (4 * flightSlopeLen * numLifts) * staircaseCount;
+                // If tube & board steps instead of prefab flights, add 2 heavy stringer tubes + step transoms
+                const customStepPipe = (stairType === 'tube_board')
+                    ? ((2 * flightSlopeLen + (Math.ceil(liftH / 0.25) * 0.85)) * numLifts * staircaseCount)
+                    : 0;
+
+                // Top landing guardrails
+                const stairTopGuardrail = (2 * (stairBayL + stairBayW)) * 2 * staircaseCount;
+
+                stairTotalPipeNet = stairStandardsPipe + stairHorizontalPipe + stairBracingPipe + stairHandrailPipe + customStepPipe + stairTopGuardrail;
+
+                // Landings at every lift (0.8m x 1.5m per lift) + top landing (2.5m x 1.5m)
+                stairLandingArea = ((0.8 * stairBayW * numLifts) + (stairBayL * stairBayW)) * staircaseCount;
+                const boardAreaSingle = boardLen * 0.225;
+                // Extra plank steps if tube_board mode
+                const extraStepBoards = (stairType === 'tube_board') ? Math.ceil((Math.ceil(liftH / 0.25) * numLifts * staircaseCount) / 3.5) : 0;
+                stairBoardsNet = Math.ceil(stairLandingArea / boardAreaSingle) + extraStepBoards;
+
+                // Toe boards on landings
+                const landingPerimeter = ((2 * (0.8 + stairBayW) * numLifts) + (2 * (stairBayL + stairBayW))) * staircaseCount;
+                stairToeBoardsNet = Math.ceil(landingPerimeter / boardLen);
+
+                // Prefab Stair Flights (1 flight per lift per tower)
+                if (stairType === 'prefab') {
+                    prefabStairFlightsNet = numLifts * staircaseCount;
+                    stairHandrailSetsNet = numLifts * 2 * staircaseCount; // internal + external handrails
+                }
+
+                // Couplers for Staircase Tower
+                stairRightAngleNet = Math.ceil((stairStandardsCount * numLifts * 2.5) + (staircaseCount * 12));
+                // Swivel couplers for sloping handrails, stringers, and bracing
+                const slopingTubesCount = (4 * numLifts * staircaseCount) + (numLifts * 4 * staircaseCount) + (stairType === 'tube_board' ? 2 * numLifts * staircaseCount : 0);
+                stairSwivelNet = Math.ceil(slopingTubesCount * 2.2);
+
+                const stairVertJoints = Math.max(0, Math.ceil(singleStandardHeight / 6.0) - 1);
+                stairSleeveNet = (stairStandardsCount * stairVertJoints) + Math.floor(stairHorizontalPipe / 12.0);
+                stairBRCNet = stairBoardsNet * 3;
+                stairBasePlatesNet = stairStandardsCount;
+            }
+
+            // 4. AGGREGATE LOOP + STAIRCASE QUANTITIES & WASTE
+            const boardWidth = 0.225;
+            const singleBoardArea = boardLen * boardWidth;
+            const loopPlatformArea = (loopL * loopW * workingPlatforms * loopCount) + straightPlatformArea;
+            const loopBoardsNet = Math.ceil(loopPlatformArea / singleBoardArea);
+
+            const totalWorkingPerimeter = (loopPerimeter * workingPlatforms * loopCount) + straightPerimeter;
+            const loopToeBoardsNet = Math.ceil(totalWorkingPerimeter / boardLen);
+
+            // Loop Couplers
+            const loopRightAngleNet = Math.ceil((loopStandardsCount * numLifts * 2.2) + (loopStandardsCount * workingPlatforms * 2) + (loopCount * numLifts * 4));
+            const estLoopBracingPieces = Math.ceil(loopBracingPipe / 3.5);
+            const loopSwivelNet = Math.ceil((estLoopBracingPieces * 2.2) + (loopStandardsCount * 0.5));
+            const verticalJointsPerStandard = Math.max(0, Math.ceil(singleStandardHeight / 6.0) - 1);
+            const loopHorizontalJoints = Math.floor((loopHorizontalPipe + loopGuardrailPipe) / 12.0);
+            const loopSleeveNet = (loopStandardsCount * verticalJointsPerStandard) + loopHorizontalJoints;
+            const loopBRCNet = loopBoardsNet * 3;
+            const loopBasePlatesNet = loopStandardsCount;
+
+            // Helper to build each BOM row cleanly
+            function createBOMRow(name, sub, unit, loopQty, stairQty, unitWeight, customWasteRatio = wasteRatio) {
+                const net = Math.round(loopQty + stairQty);
+                const waste = Math.ceil(net * customWasteRatio);
+                const total = net + waste;
+                const weight = Math.round(total * unitWeight);
+                return {
+                    name,
+                    sub,
+                    unit,
+                    loopQty: Math.round(loopQty),
+                    stairQty: Math.round(stairQty),
+                    net,
+                    waste,
+                    total,
+                    weight
+                };
+            }
+
+            const totalPipeNet = loopTotalPipeNet + stairTotalPipeNet;
+            const totalPipeFinal = Math.round(totalPipeNet + Math.ceil(totalPipeNet * wasteRatio));
+            const finalPipeBranches6m = Math.ceil(totalPipeFinal / 6.0);
+
+            currentBOMData = [
+                createBOMRow(
+                    'لوله داربست فولادی استاندارد (48.3mm × 4mm)',
+                    `معادل ${finalPipeBranches6m.toLocaleString()} شاخه 6 متری (ستون‌ها، افقی‌ها، مهاربند، هندریل پله)`,
+                    'متر',
+                    loopTotalPipeNet,
+                    stairTotalPipeNet,
+                    4.37
+                ),
+                createBOMRow(
+                    `تخته زیرپایی داربست (${boardLen} متری × 22.5cm)`,
+                    'پوشش کامل سکوهای کاری لوپ‌ها و پاگردهای برج راه‌پله',
+                    'عدد',
+                    loopBoardsNet,
+                    stairBoardsNet,
+                    boardLen === 4 ? 16.5 : 12.5
+                )
+            ];
+
+            // Add Prefab Stair Flights row if selected & staircase enabled
+            if (includeStaircase && staircaseCount > 0 && stairType === 'prefab') {
+                currentBOMData.push(
+                    createBOMRow(
+                        'باکس پله پیش‌ساخته آلومینیومی/گالوانیزه (Stair Flight)',
+                        'پله‌های استاندارد شیب‌دار جهت استقرار در هر طبقه (Lift) برج راه‌پله',
+                        'عدد',
+                        0,
+                        prefabStairFlightsNet,
+                        24.0,
+                        0 // no waste on prefab stair units
+                    )
+                );
+            }
+
+            currentBOMData.push(
+                createBOMRow(
+                    'بست راست‌گرد فورج (Right-Angle / Double Coupler)',
+                    'اتصال لوله‌های باربر افقی و عمودی در لوپ‌ها و برج راه‌پله',
+                    'عدد',
+                    loopRightAngleNet,
+                    stairRightAngleNet,
+                    1.05
+                ),
+                createBOMRow(
+                    'بست چرخان / چهارپیچ (Swivel Coupler)',
+                    'اتصال مهاربندهای مورب و نرده‌های شیب‌دار راه‌پله',
+                    'عدد',
+                    loopSwivelNet,
+                    stairSwivelNet,
+                    1.15
+                ),
+                createBOMRow(
+                    'بست رابط طولی (Sleeve / Joint Pin Coupler)',
+                    'افزایش ارتفاع ستون‌های عمودی از کف زمین تا تراز پایپینگ',
+                    'عدد',
+                    loopSleeveNet,
+                    stairSleeveNet,
+                    1.10
+                ),
+                createBOMRow(
+                    'بست تخته (Board Retaining Coupler - BRC)',
+                    'مهار ایمن تخته‌های سکوهای کاری و پاگردهای راه‌پله',
+                    'عدد',
+                    loopBRCNet,
+                    stairBRCNet,
+                    0.65
+                ),
+                createBOMRow(
+                    'کفشک و پایه قابل تنظیم (Base Plate & Screw Jack)',
+                    'تراز کردن پایه‌های عمودی روی زمین / استراکچر',
+                    'عدد',
+                    loopBasePlatesNet,
+                    stairBasePlatesNet,
+                    3.80,
+                    wasteRatio * 0.5
+                ),
+                createBOMRow(
+                    `تخته پاخور ایمنی پیرامونی (Toe-Board ${boardLen}m)`,
+                    'جلوگیری از سقوط ابزار از لبه سکوها و پاگردهای راه‌پله',
+                    'عدد',
+                    loopToeBoardsNet,
+                    stairToeBoardsNet,
+                    boardLen === 4 ? 9.0 : 7.0
+                )
+            );
+
+            // Calculate Aggregate Totals for KPIs
+            const pipeRow = currentBOMData[0];
+            const boardRow = currentBOMData[1];
+            const totalWeightKg = currentBOMData.reduce((acc, item) => acc + item.weight, 0);
+            const totalWeightTon = (totalWeightKg / 1000).toFixed(2);
+
+            // Sum all couplers (Right-Angle, Swivel, Sleeve, BRC)
+            const couplerRows = currentBOMData.filter(r => r.name.includes('بست'));
+            const totalCouplersNet = couplerRows.reduce((s, r) => s + r.net, 0);
+            const totalCouplersWaste = couplerRows.reduce((s, r) => s + r.waste, 0);
+            const totalCouplersFinal = couplerRows.reduce((s, r) => s + r.total, 0);
+
+            // Update KPI Cards
+            document.getElementById('kpiPipeTotal').innerText = pipeRow.total.toLocaleString();
+            document.getElementById('kpiPipeBranches').innerText = finalPipeBranches6m.toLocaleString();
+            document.getElementById('kpiPipeNet').innerText = pipeRow.net.toLocaleString();
+            document.getElementById('kpiPipeWaste').innerText = pipeRow.waste.toLocaleString();
+
+            document.getElementById('kpiBoardTotal').innerText = boardRow.total.toLocaleString();
+            document.getElementById('kpiStairUnits').innerText = (includeStaircase && staircaseCount > 0)
+                ? (stairType === 'prefab' ? prefabStairFlightsNet.toLocaleString() : stairBoardsNet.toLocaleString())
+                : '0';
+            document.getElementById('kpiBoardNet').innerText = boardRow.net.toLocaleString();
+            document.getElementById('kpiBoardWaste').innerText = boardRow.waste.toLocaleString();
+
+            document.getElementById('kpiCouplerTotal').innerText = totalCouplersFinal.toLocaleString();
+            document.getElementById('kpiCouplerNet').innerText = totalCouplersNet.toLocaleString();
+            document.getElementById('kpiCouplerWaste').innerText = totalCouplersWaste.toLocaleString();
+
+            document.getElementById('kpiWeightTon').innerText = totalWeightTon;
+            document.getElementById('kpiWeightKg').innerText = totalWeightKg.toLocaleString();
+
+            // Update Summaries
+            document.getElementById('bomLoopSummary').innerText = `${loopCount} لوپ` + (includeStraight && straightL > 0 ? ` + ${straightL}متر مسیر` : '');
+            document.getElementById('bomStairSummary').innerText = (includeStaircase && staircaseCount > 0) ? `${staircaseCount} برج راه‌پله` : 'بدون راه‌پله';
+            document.getElementById('bomElevSummary').innerText = `${H} متر`;
+            document.getElementById('bomWasteSummary').innerText = `${wastePercent}%`;
+            document.getElementById('diagramSummaryBadge').innerText = `${loopCount} لوپ` + (includeStaircase && staircaseCount > 0 ? ` + ${staircaseCount} برج راه‌پله` : '') + ` | ارتفاع ${H} متر`;
+
+            const totalAllStandards = loopStandardsCount + stairStandardsCount;
+            document.getElementById('techStandardsInfo').innerText = `${totalAllStandards} ستون (${loopStandardsCount} لوپ + ${stairStandardsCount} پله)`;
+            document.getElementById('techLiftsInfo').innerText = `${numLifts} طبقه افقی (هر ${liftH} متر)`;
+            document.getElementById('techStairInfo').innerText = (includeStaircase && staircaseCount > 0)
+                ? `${staircaseCount} برج (${numLifts * staircaseCount} طبقه صعود)`
+                : 'غیرفعال';
+            document.getElementById('techAreaInfo').innerText = `${(loopPlatformArea + stairLandingArea).toFixed(1)} متر مربع`;
+
+            // Render Table
+            renderBOMTable(totalWeightKg);
+
+            // Render Interactive Schematic SVG
+            renderSchematicSVG(loopCount, H, loopL, includeStraight, straightL, includeStaircase, staircaseCount);
+        }
+
+        function renderBOMTable(totalWeightKg) {
+            const tbody = document.getElementById('bomTableBody');
+            const tfoot = document.getElementById('bomTableFoot');
+
+            tbody.innerHTML = currentBOMData.map((item, idx) => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="py-3 px-2 text-slate-400 font-mono">${idx + 1}</td>
+                    <td class="py-3 px-2.5">
+                        <div class="font-bold text-slate-100">${item.name}</div>
+                        <div class="text-[11px] text-slate-400">${item.sub}</div>
+                    </td>
+                    <td class="py-3 px-2 text-slate-300">${item.unit}</td>
+                    <td class="py-3 px-2 font-mono text-orange-300">${item.loopQty.toLocaleString()}</td>
+                    <td class="py-3 px-2 font-mono text-sky-300">${item.stairQty.toLocaleString()}</td>
+                    <td class="py-3 px-2 font-mono text-slate-200 font-semibold">${item.net.toLocaleString()}</td>
+                    <td class="py-3 px-2 font-mono text-amber-400">+${item.waste.toLocaleString()}</td>
+                    <td class="py-3 px-2.5 font-mono font-black text-orange-400 text-base">${item.total.toLocaleString()}</td>
+                    <td class="py-3 px-2 font-mono text-left text-slate-300">${item.weight.toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+            tfoot.innerHTML = `
+                <tr>
+                    <td colspan="8" class="py-3.5 px-3 text-left text-xs text-slate-300">مجموع وزن تقریبی کل داربست (لوپ‌ها + برج راه‌پله با احتساب پرتی):</td>
+                    <td class="py-3.5 px-2 font-mono text-left text-purple-400 text-sm">${totalWeightKg.toLocaleString()} kg (${(totalWeightKg / 1000).toFixed(2)} Ton)</td>
+                </tr>
+            `;
+        }
+
+        function renderSchematicSVG(loopCount, H, loopL, includeStraight, straightL, includeStaircase, staircaseCount) {
+            const svg = document.getElementById('scaffoldSchematic');
+            const groundY = 205;
+
+            const visualLoops = Math.min(loopCount, 5);
+            const maxVisualHeight = 125;
+            const minVisualHeight = 58;
+            const towerH = Math.min(maxVisualHeight, Math.max(minVisualHeight, (H / 18) * maxVisualHeight));
+            const pipeY = groundY - towerH;
+
+            let svgContent = `
+                <defs>
+                    <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.8"/>
+                    </pattern>
+                    <linearGradient id="towerGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#f97316" stop-opacity="0.28"/>
+                        <stop offset="100%" stop-color="#f97316" stop-opacity="0.06"/>
+                    </linearGradient>
+                    <linearGradient id="stairGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.28"/>
+                        <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.07"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- Background Grid -->
+                <rect width="760" height="240" fill="url(#gridPattern)" />
+
+                <!-- Ground Line (Level 0.00) -->
+                <line x1="20" y1="${groundY}" x2="740" y2="${groundY}" stroke="#64748b" stroke-width="3" />
+                <text x="730" y="${groundY + 18}" fill="#94a3b8" font-size="11" font-family="Vazirmatn" text-anchor="end">تراز صفر (کف زمین / El. 0.00m)</text>
+
+                <!-- Dimension Line on Left for Pipe Elevation -->
+                <line x1="42" y1="${groundY}" x2="42" y2="${pipeY}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3" />
+                <line x1="35" y1="${groundY}" x2="49" y2="${groundY}" stroke="#38bdf8" stroke-width="1.5" />
+                <line x1="35" y1="${pipeY}" x2="49" y2="${pipeY}" stroke="#38bdf8" stroke-width="1.5" />
+                <rect x="10" y="${(groundY + pipeY)/2 - 11}" width="64" height="22" rx="5" fill="#0f172a" stroke="#38bdf8" stroke-width="1" />
+                <text x="42" y="${(groundY + pipeY)/2 + 4}" fill="#38bdf8" font-size="11" font-weight="bold" font-family="Vazirmatn" text-anchor="middle">H = ${H}m</text>
+            `;
+
+            // Reserve space on right side for Staircase Tower if enabled
+            const stairZoneW = (includeStaircase && staircaseCount > 0) ? 95 : 0;
+            const startX = 90;
+            const endX = 715 - stairZoneW;
+            const availableW = endX - startX;
+            const slotW = availableW / visualLoops;
+            const towerW = Math.min(68, slotW * 0.62);
+
+            let pipePath = `M ${startX - 15} ${pipeY}`;
+
+            for (let i = 0; i < visualLoops; i++) {
+                const centerX = startX + (i + 0.5) * slotW;
+                const leftTowerX = centerX - towerW / 2;
+                const rightTowerX = centerX + towerW / 2;
+
+                // Scaffold Tower Box from Ground to Pipe Elevation
+                svgContent += `
+                    <rect x="${leftTowerX}" y="${pipeY - 10}" width="${towerW}" height="${towerH + 10}" fill="url(#towerGrad)" stroke="#f97316" stroke-width="1.5" />
+                `;
+
+                const visualLifts = Math.max(2, Math.round(towerH / 24));
+                const liftStep = towerH / visualLifts;
+                for (let l = 0; l < visualLifts; l++) {
+                    const y1 = groundY - l * liftStep;
+                    const y2 = groundY - (l + 1) * liftStep;
+                    svgContent += `
+                        <line x1="${leftTowerX}" y1="${y2}" x2="${rightTowerX}" y2="${y2}" stroke="#fb923c" stroke-width="1" />
+                        <line x1="${leftTowerX}" y1="${y1}" x2="${rightTowerX}" y2="${y2}" stroke="#f97316" stroke-width="0.8" stroke-opacity="0.7" />
+                    `;
+                }
+
+                // Working Platform Plank Highlight
+                svgContent += `
+                    <rect x="${leftTowerX - 3}" y="${pipeY - 2}" width="${towerW + 6}" height="5" rx="1" fill="#38bdf8" />
+                    <text x="${centerX}" y="${groundY + 16}" fill="#fdba74" font-size="10" font-weight="bold" font-family="Vazirmatn" text-anchor="middle">لوپ ${i + 1}</text>
+                `;
+
+                // Pipe Expansion Loop U-shape above platform
+                const loopInnerW = towerW * 0.65;
+                const loopTopY = Math.max(18, pipeY - 26);
+                pipePath += ` L ${centerX - loopInnerW/2} ${pipeY} L ${centerX - loopInnerW/2} ${loopTopY} L ${centerX + loopInnerW/2} ${loopTopY} L ${centerX + loopInnerW/2} ${pipeY}`;
+
+                // Optional Straight Run Scaffold between towers
+                if (includeStraight && straightL > 0 && i < visualLoops - 1) {
+                    const nextCenterX = startX + (i + 1.5) * slotW;
+                    const nextLeftX = nextCenterX - towerW / 2;
+                    const bridgeW = nextLeftX - rightTowerX;
+                    if (bridgeW > 4) {
+                        svgContent += `
+                            <rect x="${rightTowerX}" y="${pipeY - 6}" width="${bridgeW}" height="${towerH + 6}" fill="#38bdf8" fill-opacity="0.08" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3 2" />
+                        `;
+                    }
+                }
+            }
+
+            // Render Staircase Tower on the right side
+            if (includeStaircase && staircaseCount > 0) {
+                const stX = endX + 14;
+                const stW = 64;
+                const stMidX = stX + stW * 0.65; // Landing divider
+
+                svgContent += `
+                    <!-- Staircase Tower Frame -->
+                    <rect x="${stX}" y="${pipeY - 10}" width="${stW}" height="${towerH + 10}" fill="url(#stairGrad)" stroke="#38bdf8" stroke-width="1.6" />
+                    <!-- Center Landing Standard -->
+                    <line x1="${stMidX}" y1="${pipeY - 10}" x2="${stMidX}" y2="${groundY}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3 2" />
+                    <!-- Top Access Bridge to Pipe Level -->
+                    <rect x="${endX - 6}" y="${pipeY - 2}" width="${stX - endX + 12}" height="5" fill="#38bdf8" />
+                `;
+
+                // Zigzag Stair Flights inside Staircase Tower
+                const stairLifts = Math.max(2, Math.round(towerH / 22));
+                const sStep = towerH / stairLifts;
+                for (let s = 0; s < stairLifts; s++) {
+                    const yBot = groundY - s * sStep;
+                    const yTop = groundY - (s + 1) * sStep;
+                    // Landing platform line
+                    svgContent += `<line x1="${stMidX}" y1="${yTop}" x2="${stX + stW}" y2="${yTop}" stroke="#7dd3fc" stroke-width="1.5" />`;
+                    // Zigzag flight slope
+                    if (s % 2 === 0) {
+                        svgContent += `<line x1="${stX + 2}" y1="${yBot}" x2="${stMidX}" y2="${yTop}" stroke="#38bdf8" stroke-width="2" />`;
+                    } else {
+                        svgContent += `<line x1="${stMidX}" y1="${yBot}" x2="${stX + 2}" y2="${yTop}" stroke="#38bdf8" stroke-width="2" />`;
+                    }
+                }
+
+                svgContent += `
+                    <text x="${stX + stW/2}" y="${groundY + 16}" fill="#38bdf8" font-size="10" font-weight="bold" font-family="Vazirmatn" text-anchor="middle">راه‌پله (${staircaseCount})</text>
+                `;
+            }
+
+            pipePath += ` L ${endX + 10} ${pipeY}`;
+
+            // Render Piping Line on top
+            svgContent += `
+                <path d="${pipePath}" fill="none" stroke="#94a3b8" stroke-width="4.5" stroke-linejoin="round" />
+                <path d="${pipePath}" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-linejoin="round" />
+            `;
+
+            if (loopCount > 5) {
+                svgContent += `
+                    <rect x="595" y="12" width="135" height="22" rx="6" fill="#f97316" />
+                    <text x="662" y="27" fill="#0f172a" font-size="10.5" font-weight="bold" font-family="Vazirmatn" text-anchor="middle">+${loopCount - 5} لوپ دیگر در محاسبات</text>
+                `;
+            }
+
+            svg.innerHTML = svgContent;
+        }
+
+        function exportToCSV() {
+            if (!currentBOMData.length) return;
+            const loopCount = document.getElementById('loopCount').value;
+            const H = document.getElementById('pipeElevation').value;
+            const waste = document.getElementById('wasteFactor').value;
+            const includeStair = document.getElementById('includeStaircase').checked;
+            const stairCount = includeStair ? document.getElementById('staircaseCount').value : 0;
+
+            let csvContent = "\uFEFF"; // UTF-8 BOM for Persian Excel support
+            csvContent += `گزارش متره و برآورد متریال داربست پایپینگ و برج راه‌پله - سامانه داربست\n`;
+            csvContent += `تعداد لوپ‌ها:,${loopCount},تعداد برج راه‌پله:,${stairCount},ارتفاع از کف زمین (متر):,${H},ضریب پرتی (%):,${waste}%\n\n`;
+            csvContent += `ردیف,شرح تجهیز / متریال,توضیحات فنی,واحد,سهم لوپ‌ها (خالص),سهم راه‌پله (خالص),جمع خالص,مقدار پرتی,جمع کل نهایی,وزن تقریبی (kg)\n`;
+
+            currentBOMData.forEach((item, index) => {
+                csvContent += `${index + 1},"${item.name}","${item.sub}",${item.unit},${item.loopQty},${item.stairQty},${item.net},${item.waste},${item.total},${item.weight}\n`;
+            });
+
+            const totalWeight = currentBOMData.reduce((sum, i) => sum + i.weight, 0);
+            csvContent += `,,,,,,,,مجموع وزن کل (kg):,${totalWeight}\n`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Darbast_MTO_${loopCount}Loops_${stairCount}Stairs_H${H}m.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function resetForm() {
+            document.getElementById('scaffoldForm').reset();
+            document.getElementById('straightRunContainer').classList.add('hidden');
+            toggleStaircase();
+            updateWasteLabel();
+            calculateScaffolding();
+        }
+
+        window.onload = function() {
+            updateWasteLabel();
+            calculateScaffolding();
+        };
+    </script>
+</body>
+</html>
